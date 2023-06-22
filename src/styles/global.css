@@ -1,19 +1,21 @@
-/* .time-line-container > div:last-child .education__time > .education__line {
+@import "theme-toggle.css";
+
+.time-line-container > div:last-child .education__time > .education__line {
 	display: none;
-} */
+}
 
 /* ========== import font source ========== */
-@import "fonts.css";
+/* @import "fonts.css"; */
 
 /* ========== import custom styles ========== */
-@import "custom-styles.css";
+/* @import "custom-styles.css"; */
 
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
 
 /* ========== tailwind custom styles ========== */
-@layer components {
+/* @layer components {
 	body {
 		@apply bg-light dark:bg-dark;
 	}
@@ -42,4 +44,4 @@
 	.footer-icons {
 		@apply dark:text-light flex items-center border border-dark dark:border-light p-4 rounded-lg justify-center;
 	}
-}
+} */

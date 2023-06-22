@@ -1,16 +1,72 @@
 ---
-title: "Demo Post 2"
+title: "Temperature Sensor Using Arduino And RaspberryPi"
 description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 pubDate: "Sep 11 2022"
-heroImage: "/post_img.webp"
+heroImage: "/lm35.jpeg"
 ---
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu turpis egestas pretium. Euismod elementum nisi quis eleifend quam adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius sit amet mattis vulputate enim. Habitasse platea dictumst quisque sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque sagittis purus sit amet.
+Here we will connect an LM35 temperature sensor to Arduino and use its readings in RaspberryPi to monitor the
+temperature and send an email alert if the temperature is above 100. This can be used for safety as well as many
+places to get alerts of temperature variation.
 
-Morbi tristique senectus et netus. Id semper risus in hendrerit gravida rutrum quisque non tellus. Habitasse platea dictumst quisque sagittis purus sit amet. Tellus molestie nunc non blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor posuere ac ut. Fringilla urna porttitor rhoncus dolor. Elit ullamcorper dignissim cras tincidunt lobortis. In cursus turpis massa tincidunt dui ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc. Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui vivamus arcu felis bibendum. Dignissim suspendisse in est ante in nibh mauris. Sed tempus urna et pharetra pharetra massa massa ultricies mi.
+### Hardware used:
 
-Mollis nunc sed id semper risus in. Convallis a cras semper auctor neque. Diam sit amet nisl suscipit. Lacus viverra vitae congue eu consequat ac felis donec. Egestas integer eget aliquet nibh praesent tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In vitae turpis massa sed elementum. Tristique et egestas quis ipsum suspendisse ultrices. Eget lorem dolor sed viverra ipsum. Vel turpis nunc eget lorem dolor sed viverra. Posuere ac ut consequat semper viverra nam. Laoreet suspendisse interdum consectetur libero id faucibus. Diam phasellus vestibulum lorem sed risus ultricies tristique. Rhoncus dolor purus non enim praesent elementum facilisis. Ultrices tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium quam vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus faucibus ornare. Fringilla urna porttitor rhoncus dolor purus non. Amet dictum sit amet justo donec enim.
+- Arduino Uno
+- Raspberry Pi
+- Jumper Cables
+- Bread Board
+- LM35 (Temperature Sensor)
+- USB cable (connecting Arduino to Raspberry Pi)
 
-Mattis ullamcorper velit sed ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper viverra. Tellus mauris a diam maecenas sed enim ut sem viverra. Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu ac tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum tellus pellentesque eu. Fusce ut placerat orci nulla pellentesque dignissim enim sit amet. Ut enim blandit volutpat maecenas volutpat blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id cursus metus aliquam eleifend mi.
+### Steps:
 
-Tempus quam pellentesque nec nam aliquam sem. Risus at ultrices mi tempus imperdiet. Id porta nibh venenatis cras sed felis eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam tempor orci eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non tellus orci ac. Blandit libero volutpat sed cras. Nec tincidunt praesent semper feugiat nibh sed pulvinar proin gravida. Egestas integer eget aliquet nibh praesent tristique magna.
+1. Connect Arduino to Arduino IDE and upload the below code to it.
+2. Connect your RaspberryPi and make a new file in terminal and write the below python code to it.
+3. Edit your username and passwords to it. (Note: If you are using Gmail kindly go to settings and allow
+   less secure apps.
+4. Connect Arduino Uno to RaspberryPi using the USB cable.
+   ![Raspberry Pi and Arduino Serial Connection](/rpi-and-arduino-connection.jpg)
+5. Run the python code in RaspberryPi. 6. If the temperature is above 100&deg; C, an email alert will be sent to the receiver.
+
+**Arduino code:**
+
+```python
+char dataString[50] = {0};
+int val;
+int tempPin = 1;
+void setup() {
+  Serial.begin(9600);              //Starting serial communication
+}
+void loop() {
+  val = analogRead(tempPin);
+  float mv = ( val/1024.0)*5000;
+  float cel = mv/10;
+  int cel1=(int)cel;
+  sprintf(dataString,"%02X",cel1); // convert a value to hexa
+  Serial.println(dataString);   // send the data
+  delay(30000);                  // give the loop some break
+}
+```
+
+**RaspberryPi code:**
+
+```python
+import serial
+import smtplib
+ser = serial.Serial('/dev/ttyACM0',9600)
+s = [0]
+while True:
+  read_serial=ser.readline()
+  temp = int (ser.readline(),16)
+  s[0] = str(temp)
+  print s[0]
+  if temp > 100:
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login("Sender Mail", "password")
+    msg =s[0]+ "C Temperature Above Limit! Kindly Pay Attention!!!"
+    server.sendmail("Sender Mail", "Receiver Mail", msg)
+    server.quit()
+  else:
+    print "Safe"
+```
